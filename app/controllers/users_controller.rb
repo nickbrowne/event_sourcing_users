@@ -25,14 +25,17 @@ class UsersController < ApplicationController
   # POST /users.json
   def create
     @user = User.new(user_params)
+    command = Commands::Users::Create.new(description: @user.description, name: @user.name)
 
     respond_to do |format|
-      if @user.save
+      if command.valid?
+        command.call
         format.html { redirect_to @user, notice: 'User was successfully created.' }
         format.json { render :show, status: :created, location: @user }
       else
+        @user.errors.merge!(command.errors)
         format.html { render :new }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.json { render json: command.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -40,11 +43,16 @@ class UsersController < ApplicationController
   # PATCH/PUT /users/1
   # PATCH/PUT /users/1.json
   def update
+    @user.assign_attributes(user_params)
+    command = Commands::Users::Update.new(active: true, description: @user.description, id: @user.id, name: @user.name, visible: true)
+
     respond_to do |format|
-      if @user.update(user_params)
+      if command.valid?
+        command.call
         format.html { redirect_to @user, notice: 'User was successfully updated.' }
         format.json { render :show, status: :ok, location: @user }
       else
+        @user.errors.merge!(command.errors)
         format.html { render :edit }
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end

@@ -1,5 +1,3 @@
 class User < ApplicationRecord
-  def readonly?
-    true
-  end
+  has_many :events, class_name: "Events::Users::BaseEvent"
 end
