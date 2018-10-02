@@ -5,9 +5,6 @@
 #
 # Subclasses must define the `apply` method.
 class Lib::BaseEvent < ActiveRecord::Base
-  # serialize :data, JSON
-  # serialize :metadata, JSON
-
   before_validation :preset_aggregate
   before_create :apply_and_persist
   after_create :dispatch
