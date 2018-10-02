@@ -35,6 +35,12 @@ module Lib
 
     included do
       include ActiveModel::Validations
+
+      # @param [Hash<Symbol, Object>] args
+      def initialize(args = {})
+        args.each { |key, value| instance_variable_set("@#{key}", value) }
+        after_initialize
+      end
     end
 
     class_methods do
@@ -43,27 +49,17 @@ module Lib
       # On success: returns the event
       # On noop: returns nil
       # On failure: raise an ActiveRecord::RecordInvalid error
-      def call(*args)
-        new(*args).call
+      def call(args = {})
+        new(args).call
       end
 
       # Define the attributes.
-      # They are set when initializing the command as keyword arguments and
+      # They are set when initializing the command as a hash and
       # are all accessible as getter methods.
       #
       # ex: `attributes :post, :user, :ability`
       def attributes(*args)
-        attr_reader(*args)
-
-        initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
-        initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
-
-        class_eval <<~CODE
-          def initialize(#{initialize_method_arguments})
-            #{initialize_method_body}
-            after_initialize
-          end
-        CODE
+        attr_accessor(*args)
       end
     end
 
