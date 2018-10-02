@@ -99,12 +99,6 @@ class Lib::BaseEvent < ActiveRecord::Base
 
   delegate :aggregate_name, to: :class
 
-  # Underscored class name by default. ex: "post/updated"
-  # Used when sending events to the data pipeline
-  def self.event_name
-    self.name.sub("Events::", '').underscore
-  end
-
   private def dispatch
     Events::Dispatcher.dispatch(self)
   end
