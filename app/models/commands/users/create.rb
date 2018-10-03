@@ -9,13 +9,17 @@ module Commands
       validates :name, presence: true, length: { minimum: 5 }
 
       private def build_event
-        Events::Users::Created.new(
-          active: true,
-          description: description,
-          name: name,
-          visible: true,
+        Events::Users::Event.new(
+          data: UserCreated.new(
+            true,
+            description,
+            name,
+            true,
+          )
         )
       end
     end
   end
 end
+
+

@@ -27,7 +27,7 @@ class Lib::BaseEvent < ActiveRecord::Base
   # @param [Object] aggregate
   def replay(aggregate)
     event_class = self.metadata["klass"].constantize
-    event_class.new(self.data).apply(aggregate)
+    event_class.new(self.data).data.apply(aggregate)
   end
 
   after_initialize do
@@ -91,7 +91,7 @@ class Lib::BaseEvent < ActiveRecord::Base
     aggregate.lock! if aggregate.persisted?
 
     # Apply!
-    self.aggregate = apply(aggregate)
+    self.aggregate = data.apply(aggregate)
 
     # Persist!
     aggregate.save!

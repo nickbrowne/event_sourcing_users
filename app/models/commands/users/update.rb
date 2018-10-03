@@ -11,12 +11,14 @@ module Commands
       validates :visible, inclusion: { in: [true, false] }
 
       private def build_event
-        Events::Users::Updated.new(
-          active: active,
-          description: description,
+        Events::Users::Event.new(
           id: id,
-          name: name,
-          visible: visible,
+          data: UserUpdated.new(
+            active: active,
+            description: description,
+            name: name,
+            visible: visible,
+          )
         )
       end
     end
