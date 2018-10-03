@@ -25,6 +25,7 @@ Boot rails as usual, though this app uses webpacker, so you'll also want to star
   - meta (jsonb)
 - data column should be deserialized into an OpenStructLike object, which can be chained together with #apply to build aggregate.
 - #apply should not mutate the given object, but instead return a new object each time
+- Should be FP friendly, eg `events.reduce(aggregate) { |agg, event| event.apply(agg) }`
 
 ### Aggregate
 - Read-only models that are a view into the current state
