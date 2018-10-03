@@ -5,9 +5,6 @@
 #
 # Subclasses must define the `apply` method.
 class Lib::BaseEvent < ActiveRecord::Base
-  # serialize :data, JSON
-  # serialize :metadata, JSON
-
   before_validation :preset_aggregate
   before_create :apply_and_persist
   after_create :dispatch
@@ -20,12 +17,25 @@ class Lib::BaseEvent < ActiveRecord::Base
     raise NotImplementedError
   end
 
-  after_initialize do
-    self.data ||= {}
-    self.metadata ||= {}
+  # Aggregate name the event will belong to
+  # Should be a symbol. Example: `:user`
+  def self.aggregate_name
+    raise NotImplementedError, "Events must belong to an aggregate"
   end
 
-  # Define attributes to be serialize in the `data` column.
+  # Replays the event on any given aggregate
+  # @param [Object] aggregate
+  def replay(aggregate)
+    event_class = self.metadata["klass"].constantize
+    event_class.new(self.data).apply(aggregate)
+  end
+
+  after_initialize do
+    self.data ||= {}
+    self.metadata ||= { klass: self.class.name }
+  end
+
+  # Define attributes to be serialized in the `data` column.
   # It generates setters and getters for those.
   #
   # Example:
@@ -36,11 +46,7 @@ class Lib::BaseEvent < ActiveRecord::Base
   #
   # MyEvent.create!(
   def self.data_attributes(*attrs)
-    @data_attributes ||= []
-
     attrs.map(&:to_s).each do |attr|
-      @data_attributes << attr unless @data_attributes.include?(attr)
-
       define_method attr do
         self.data ||= {}
         self.data[attr]
@@ -51,8 +57,6 @@ class Lib::BaseEvent < ActiveRecord::Base
         self.data[attr] = arg
       end
     end
-
-    @data_attributes
   end
 
   def aggregate=(model)
@@ -94,19 +98,7 @@ class Lib::BaseEvent < ActiveRecord::Base
     self.aggregate_id = aggregate.id if aggregate_id.nil?
   end
 
-  def self.aggregate_name
-    inferred_aggregate = reflect_on_all_associations(:belongs_to).first
-    raise "Events must belong to an aggregate" if inferred_aggregate.nil?
-    inferred_aggregate.name
-  end
-
   delegate :aggregate_name, to: :class
-
-  # Underscored class name by default. ex: "post/updated"
-  # Used when sending events to the data pipeline
-  def self.event_name
-    self.name.sub("Events::", '').underscore
-  end
 
   private def dispatch
     Events::Dispatcher.dispatch(self)

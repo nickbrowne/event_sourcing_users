@@ -16,7 +16,6 @@ ActiveRecord::Schema.define(version: 2018_09_27_081258) do
   enable_extension "plpgsql"
 
   create_table "user_events", force: :cascade do |t|
-    t.string "type", null: false
     t.jsonb "data", null: false
     t.jsonb "metadata", null: false
     t.bigint "user_id"
