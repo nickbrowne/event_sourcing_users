@@ -1,6 +1,6 @@
 module Events
   module Users
-    class Created < Events::Users::BaseEvent
+    class Created < Events::Users::Event
       data_attributes :active, :description, :name, :visible
 
       # @param [User] user

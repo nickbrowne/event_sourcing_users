@@ -1,6 +1,6 @@
 module Events
   module Users
-    class Updated < Events::Users::BaseEvent
+    class Updated < Events::Users::Event
       data_attributes :active, :description, :id, :name, :visible
 
       def apply(user)
